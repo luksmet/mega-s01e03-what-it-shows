@@ -37,5 +37,5 @@ Exported 2026-10-04 from the `support` repo, `apps/kb/` → `src/`.
 
 ## Build
 
-`npm install && npm run build` renders every page to `rendered/` (SvelteKit + mdsvex, static).
-`rendered/kb/incidents/4471/split/index.html` is the #4471 split page as the desk sees it.
+`npm install && npm run build` renders every page to `desk-view/` (SvelteKit + mdsvex, static).
+`desk-view/kb/incidents/4471/split/index.html` is the #4471 split page as the desk sees it.

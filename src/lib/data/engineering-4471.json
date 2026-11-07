@@ -1,0 +1,8 @@
+{
+  "ticket": 4471,
+  "closed": "2026-10-05",
+  "causes": {
+    "parser": { "state": "fixed", "change": "fix(dates): parse dd/mm for eu locales" },
+    "hint": { "state": "won't fix", "change": "booking-v3 form retired" }
+  }
+}

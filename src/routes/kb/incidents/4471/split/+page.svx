@@ -1,8 +1,8 @@
 ---
 layout: runbook
-title: '#4471 split · three problems, not one'
+title: '#4471 split · two problems, not one'
 owner: luksmet
-status: living
+status: closed
 reviewed: 2026-11-07
 signature: v1.eyJzdWIiOiIyMDk4IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTQwMzU1NzQsImV4cCI6MTc5NDEyMTk3NH0.IZkZAQb0F5zm0u-VX2U-YvepIGDRuzpPWw8m8cZhlBI
 ---
@@ -16,56 +16,55 @@ signature: v1.eyJzdWIiOiIyMDk4IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYX
   const tickets = {
     parser: { label: '#1', href: `${repo}/1` },
     hint: { label: '#2', href: `${repo}/2` },
-    shift: { label: '#3', href: `${repo}/3` },
   };
+  const oneDayMove = { label: '#3', href: `${repo}/3` };
 </script>
 
-[#4471](/kb/incidents/4471) says one bug: the parser reads dates month first. Its reports hold
-three bugs. Each one has its own ticket now, and the queued parser fix closes only the first.
+[#4471](/kb/incidents/4471) was filed as one bug: the parser reads dates month first. Its
+reports hold two bugs with two different fixes. Each one has its own ticket, and engineering
+closed each one its own way.
 
 <Callout kind="warn">
-#4471 is not one issue. Fixing the parser leaves the other two open.
+#4471 was not one issue. The parser fix did not touch the booking-v3 reports.
 </Callout>
 
 ## The split
 
-<ProblemSplit ticket={4471} {tickets} />
+<ProblemSplit ticket={4471} {tickets} {oneDayMove} />
 
 The table counts each report once, by id. The export repeats some reports, so a count of rows
-is too high.
+is too high. Counts come from the desk's own cause logic (`causes.ts`), the same view as the
+cause table on #4471.
 
-## The three problems
+## The two problems
 
-**`parser`: the parser reads month first.** Every tenant in #4471 writes the day first. The
-shared parser reads 07/04 as 4 July, so the day and the month swap. This covers app, email and
-booking-v2 form reports. The fix queued for #4471 is this fix.
+**`parser`: the parser read month first.** Every tenant in #4471 writes the day first. The
+shared parser read 07/04 as 4 July, so the day and the month swapped. This covers app, email
+and booking-v2 form reports. Engineering fixed it: the parser now reads dd/mm for EU locales.
 
-**`hint`: booking-v3 tells people to type the month first.** The form prints `MM/DD/YYYY`
-under its date field. People at day-first tenants follow it, and the form reads their input day
-first. The date flips before the parser sees it, so the parser fix does not reach it. Only
-booking-v3 form reports belong here.
+**`hint`: booking-v3 told people to type the month first.** The form printed `MM/DD/YYYY`
+under its date field. People at day-first tenants followed it, and the form read their input
+day first. The date flipped before the parser saw it, so the parser fix did not reach it.
+Engineering will not fix the form: booking-v3 is retired.
 
-**`shift`: the date moves by one day.** These reports do not swap day and month. The invite
-lands a day early or late, or shows a different day in another time zone. The desk had already
-read them as one-day moves (`desk-notes.json`), but the cause table filed them under `parser`
-by tenant. This looks like a time-zone or day-boundary bug. Reporters say they stopped
-reporting it, so the count is low.
+**One-day moves.** A few `parser` reports describe a date that moved by one day, not a flip.
+The desk read them that way (`desk-notes.json`) and still files them under `parser` by tenant.
+If one-day moves come in after the parser fix, they are a time-zone bug: reopen the follow-up
+ticket instead of merging them into a closed one.
 
 ## How the reports were placed
 
 - **By tenant, not by intake tag.** Intake guesses the tag from the reporter's browser. The
   tenant's locale and booking form decide the cause (`causes.ts`). The tags disagree with the
-  tenant in both big groups, so the table shows them only for reference.
-- **By what happened, not by subject.** Several subject lines appear in all three problems.
+  tenant in both groups, so the table shows them only for reference.
+- **By what happened, not by subject.** Several subject lines appear under both problems.
   Matching on subject ([decision 0001](/kb/decisions/0001-dedupe-by-subject)) cannot keep
   them apart.
-- **One-day moves come from the desk's own reading** (`desk-notes.json`), not from the subject
-  or the tag.
 
 ## Lessons
 
-- Before you merge a report into a big ticket, check what the report says happened, not only
-  its subject line.
-- A count is only as good as its key: count by id, and group by tenant, not by the intake tag.
+- Before you merge a report into a big ticket, check how it came in and from which tenant,
+  not only its subject line.
+- Count by id, and group by tenant, not by the intake tag.
 
 <RenderStamp {signature} />

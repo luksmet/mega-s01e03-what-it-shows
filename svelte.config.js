@@ -9,7 +9,7 @@ export default {
   extensions: ['.svelte', '.svx'],
   preprocess: [mdsvex({ extensions: ['.svx'], layout: { runbook } })],
   kit: {
-    adapter: adapter({ pages: 'rendered', assets: 'rendered', strict: false }),
+    adapter: adapter({ pages: 'desk-view', assets: 'desk-view', strict: false }),
     alias: { '#lib': 'src/lib' },
     prerender: { entries: ['*'], handleHttpError: 'warn' },
   },
