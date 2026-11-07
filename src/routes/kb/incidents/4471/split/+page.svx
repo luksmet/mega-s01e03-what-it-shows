@@ -1,0 +1,71 @@
+---
+layout: runbook
+title: '#4471 split · three problems, not one'
+owner: luksmet
+status: living
+reviewed: 2026-11-07
+signature: v1.eyJzdWIiOiIyMDk4IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTQwMzU1NzQsImV4cCI6MTc5NDEyMTk3NH0.IZkZAQb0F5zm0u-VX2U-YvepIGDRuzpPWw8m8cZhlBI
+---
+
+<script>
+  import ProblemSplit from '#lib/kb/ProblemSplit.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/luksmet/mega-s01e03-what-it-shows/issues';
+  const tickets = {
+    parser: { label: '#1', href: `${repo}/1` },
+    hint: { label: '#2', href: `${repo}/2` },
+    shift: { label: '#3', href: `${repo}/3` },
+  };
+</script>
+
+[#4471](/kb/incidents/4471) says one bug: the parser reads dates month first. Its reports hold
+three bugs. Each one has its own ticket now, and the queued parser fix closes only the first.
+
+<Callout kind="warn">
+#4471 is not one issue. Fixing the parser leaves the other two open.
+</Callout>
+
+## The split
+
+<ProblemSplit ticket={4471} {tickets} />
+
+The table counts each report once, by id. The export repeats some reports, so a count of rows
+is too high.
+
+## The three problems
+
+**`parser`: the parser reads month first.** Every tenant in #4471 writes the day first. The
+shared parser reads 07/04 as 4 July, so the day and the month swap. This covers app, email and
+booking-v2 form reports. The fix queued for #4471 is this fix.
+
+**`hint`: booking-v3 tells people to type the month first.** The form prints `MM/DD/YYYY`
+under its date field. People at day-first tenants follow it, and the form reads their input day
+first. The date flips before the parser sees it, so the parser fix does not reach it. Only
+booking-v3 form reports belong here.
+
+**`shift`: the date moves by one day.** These reports do not swap day and month. The invite
+lands a day early or late, or shows a different day in another time zone. The desk had already
+read them as one-day moves (`desk-notes.json`), but the cause table filed them under `parser`
+by tenant. This looks like a time-zone or day-boundary bug. Reporters say they stopped
+reporting it, so the count is low.
+
+## How the reports were placed
+
+- **By tenant, not by intake tag.** Intake guesses the tag from the reporter's browser. The
+  tenant's locale and booking form decide the cause (`causes.ts`). The tags disagree with the
+  tenant in both big groups, so the table shows them only for reference.
+- **By what happened, not by subject.** Several subject lines appear in all three problems.
+  Matching on subject ([decision 0001](/kb/decisions/0001-dedupe-by-subject)) cannot keep
+  them apart.
+- **One-day moves come from the desk's own reading** (`desk-notes.json`), not from the subject
+  or the tag.
+
+## Lessons
+
+- Before you merge a report into a big ticket, check what the report says happened, not only
+  its subject line.
+- A count is only as good as its key: count by id, and group by tenant, not by the intake tag.
+
+<RenderStamp {signature} />
